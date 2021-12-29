@@ -444,7 +444,7 @@ int main()
 
     cout << "Generating possible delivery schedules to deliver your parcels...\n";
 
-    ofstream route_stats("route_stats.csv");
+    ofstream route_stats("route-stats.csv");
     if (!route_stats.is_open())
     {
         cout << "Error opening output file for route scheduling statistics!";
@@ -459,7 +459,7 @@ int main()
     route_stats << "Scheduler" << "," << "Free Vol in Used Trucks" << "," << "Avg Capacity Used" << "," << "Std Dev Avg Capacity" << "," << "Avg Dist" << "," << "Std Dev Dist" << "\n";
     route_stats << "Most Parcels" << "," << newfleet.free_vol_in_used_trucks() << "," << newfleet.avg_capacity_used() << "," << newfleet.std_dev_capacity_used() << "," << newfleet.avg_distance_travelled(newMap) << "," << newfleet.std_dev_capacity_used() << "/n";
 
-    //create schedules and write to file
+    //create schedules and write to file - also print out the trucks and routes for the fleet? maybe just print to terminal
 
     route_stats.close();
 
