@@ -1,3 +1,14 @@
+/**
+ * @file domain.hpp
+ * @author Cassandra Masschelein
+ * @brief Define the classes necessary to represent the parcels, trucks, and fleet of trucks
+ * @version 0.1
+ * @date 2021-12-28
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 /* C++ Header Files */
 #pragma once
 #include <algorithm>
@@ -11,6 +22,7 @@
 
 using namespace std;
 
+/* This is the common depot where all trucks and parcels begin. */
 const string COMMON_DEPOT = "Toronto";
 
 namespace map_invalidation
@@ -53,7 +65,7 @@ namespace truck_invalidation
 }
 
 /**
- * @brief A parcel that needs to be delivered. A parcel has an id, a volume, a source city, and a destination city
+ * @brief A parcel that needs to be delivered. A parcel has an ID, a volume, a source city, and a destination city
  * 
  */
 class parcels
@@ -61,29 +73,40 @@ class parcels
     friend class trucks;
 
 public:
-    // Constructor with arguments read from the input data file parcel_data.txt 
+    /* Constructor with arguments read from the input data file parcel_data.txt. Pre-condition: the parcel already arrived at the depot. */
     parcels(const uint64_t &this_id, const uint64_t &_vol, const string &_source_city, const string &_dest) : p_id(this_id), p_vol(_vol), source_city(_source_city), dest_city(_dest)
     {
+        /* A parcels source city and destination city cannot be the same. */
         if (source_city == dest_city)
             throw map_invalidation::city_error();
-        if (p_id > 100000)
+        if (p_id > 100000) // A parcel ID must be unique
         {
             throw parcel_invalidation::unique_id();
         }
     }
 
+    /**
+     * @brief Return the volume of a parcel
+     * 
+     * @return volume in cm^3
+     */
     uint64_t volume() const
     {
         return p_vol;
     }
 
+    /**
+     * @brief Return the city where this parcel is being sent
+     * 
+     * @return The destination city 
+     */
     string where_to() const
     {
         return dest_city;
     }
 
 private:
-    // Each parcel has an id, volume, source city, and destination city
+    /* Each parcel has an ID that is unique, volume, source city, and destination city where this parcel needs to go. */
     uint64_t p_id, p_vol;
     string source_city, dest_city;
 };
@@ -97,56 +120,54 @@ class trucks
     friend class fleet;
 
 public:
-    // Constructor with arguments read from the input data file truck_data.txt
+    /* Constructor with arguments read from the input data file truck_data.txt. A truck has a unique ID, capacity, available space, route, depot, and parcels. */
     trucks(const uint64_t &_id, const uint64_t &_cap, const string &_depot) : avail_space(_cap), t_id(_id), t_cap(_cap), depot(_depot) 
     {
-        if (t_id > 100000)
+        if (t_id > 100000) // The ID is not small and unique
         {
             throw truck_invalidation::unique_id();
         }
 
-        if (depot != common_depot)
+        if (depot != common_depot) // The truck is not starting at the depot
         {
             throw truck_invalidation::mismatch_depot();
         }
 
-        route.push_back(_depot);
-        parcels_list = vector<uint64_t>(0);
+        route.push_back(_depot); // Add the depot as the first stop on the route
+        parcels_list = vector<uint64_t>(0); // A list of parcels on this truck
         total_trucks++;
         truck_number = total_trucks;
     }
 
-    // Volume available in a truck to fill with parcels
-    uint64_t avail_space;
-
-    // The route that a given truck will take
-    vector<string> route;
-
-    // The list of parcels (by id) that are loaded onto this truck
-    vector<uint64_t> parcels_list;
+    uint64_t avail_space; // Volume available in a truck to fill with parcels
+    vector<string> route; // The route that a given truck will take
+    vector<uint64_t> parcels_list; // The list of parcels (by id) that are loaded onto this truck
 
     /**
-     * @brief A function that loads parcels onto a truck
+     * @brief Load a parcel onto a truck
      * 
      * @param parcel The parcel to potentially be loaded
      * @return True or False whether that parcel was loaded
      */
     bool pack_truck(const parcels &parcel)
     {
-        // If the parcel will fit on the truck, load it on the truck
-        if (parcel.p_vol <= avail_space)
+        if (parcel.p_vol <= avail_space) // If the parcel will fit on the truck, load it on the truck
         {
             parcels_list.push_back(parcel.p_id);
             avail_space -= parcel.p_vol;
-            // If the parcel destination is not in the route, add it to the end of the route
-            if (find(route.begin(), route.end(), parcel.dest_city) != route.end())
+            if (find(route.begin(), route.end(), parcel.dest_city) != route.end()) // If the parcel destination is not in the route, add it to the end of the route
                 route.push_back(parcel.dest_city);
             return true;
         }
         return false;
     }
 
-    bool volume() const
+    /**
+     * @brief The trucks capacity
+     * 
+     * @return The volume of the truck in cm^3 
+     */
+    uint64_t volume() const
     {
         return t_cap;
     }
@@ -173,17 +194,19 @@ public:
     }
 
 private:
-    // Each truck has an id and capacity that is read from the input file trucks.txt
+    /* Each truck has an ID and capacity that is read from the input file trucks.txt. */
     uint64_t t_id;
     uint64_t t_cap;
-    // The depot where this truck will be starting from
-    string depot;
+    string depot; // The depot where this truck will be starting from
     inline static const string common_depot = COMMON_DEPOT;
-    // Keep track of how many trucks we have
-    inline static uint64_t total_trucks = 0;
-    uint64_t truck_number;
+    inline static uint64_t total_trucks = 0; // Keep track of how many trucks we have
+    uint64_t truck_number; // This trucks number
 };
 
+/**
+ * @brief A map that stores the distances between cities for all cities where parcels must be delivered
+ * 
+ */
 class distanceMap
 {
     friend class fleet;
@@ -239,8 +262,7 @@ public:
     }
 
 private:
-    // A map where each key is a tuple of the two cities and the value is the distance between them
-    map<vector<string>, uint64_t> distance_map;
+    map<vector<string>, uint64_t> distance_map; // A map where each key is a tuple of the two cities and the value is the distance between them
 };
 
 
@@ -262,12 +284,13 @@ public:
     void add_truck(const trucks &truck)
     {
         uint64_t counter = 0;
+        /* Check if the truck has already been added to the fleet. */
         for (trucks curr_truck : f_trucks)
         {
-            if (curr_truck.t_id == truck.t_id)
+            if (curr_truck.t_id == truck.t_id) // Check by ID since IDs are unique
                 counter += 1;
         }
-        if (counter == 0)
+        if (counter == 0) // The truck has not already been added to the fleet
         {
             f_trucks.push_back(truck);
             parcel_alloc[truck.t_id] = truck.parcels_list;
@@ -290,8 +313,6 @@ public:
             cout << "\n";
         }
     }
-
-    
 
     /**
      * @brief A function that returns the total number of trucks in this fleet
@@ -330,7 +351,7 @@ public:
         uint64_t volume = 0;
         for (const trucks &truck : f_trucks)
         {
-            if (truck.avail_space != truck.t_cap)
+            if (truck.avail_space != truck.t_cap) // Check for trucks that have parcels loaded on them
                 volume += truck.avail_space;
         }
         return volume;
@@ -438,8 +459,6 @@ public:
     }
 
 private:
-    // The list of trucks in this fleet, stored in a vector
-    vector<trucks> f_trucks;
-    // A map of truck IDs in the fleet and the parcel IDs loaded in loading order
-    map<uint64_t, vector<uint64_t> > parcel_alloc;
+    vector<trucks> f_trucks; // The list of trucks in this fleet, stored in a vector
+    map<uint64_t, vector<uint64_t> > parcel_alloc; // A map of truck IDs in the fleet and the parcel IDs loaded in loading order
 };
