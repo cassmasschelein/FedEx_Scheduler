@@ -18,6 +18,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <cctype>
 
 using namespace std;
 
@@ -271,8 +272,6 @@ int main()
     distanceMap newMap;
     for (vector<string> &map_entry : map_file_contents)
     {
-        string city_1 = map_entry.at(0);
-        string city_2 = map_entry.at(1);
         /* Extract the distance between cities as an integer value. */
         try 
         {
@@ -291,21 +290,25 @@ int main()
         catch (invalid_argument const &ex) 
         {
             cerr << "Invalid distance: " << ex.what() << '\n';
-            cout << correct_truck_data;
+            cout << correct_map_data;
             return -1;
         } 
         catch (out_of_range const &ex) 
         {
             cerr << "Number out of range: " << ex.what() << '\n';
-            cout << correct_truck_data;
+            cout << correct_map_data;
             return -1;
         }
 
         size_t pos;
         uint64_t distance = stoull(map_entry[2], &pos);
 
-        city_1.erase(remove(map_entry[0].begin(), map_entry[0].end(), ' '), map_entry[0].end()); // Remove any extra whitespace characters
-        city_2.erase(remove(map_entry[1].begin(), map_entry[1].end(), ' '), map_entry[1].end()); // Remove any extra whitespace characters
+        map_entry[0].erase(remove(map_entry[0].begin(), map_entry[0].end(), ' '), map_entry[0].end()); // Remove any extra whitespace characters
+        map_entry[1].erase(remove(map_entry[1].begin(), map_entry[1].end(), ' '), map_entry[1].end()); // Remove any extra whitespace characters
+
+        string city_1 = map_entry.at(0);
+        string city_2 = map_entry.at(1);
+
         newMap.add_distance(city_1, city_2, distance); // Add the map entry into the distance map
     }
     
@@ -326,8 +329,6 @@ int main()
     vector<parcels> list_of_parcels; // Store the parcels read from the file
     for (vector<string> &parcel_data : parcel_file_contents)
     {
-        string from_city = parcel_data[1];
-        string to_city = parcel_data[2];
         /* Validate the parcel ID. */
         try 
         {
@@ -385,11 +386,14 @@ int main()
         }
 
         size_t pos;
-        uint64_t parcel_id = stoull(parcel_data[3], &pos);
         uint64_t parcel_volume = stoull(parcel_data[0], &pos);
+        uint64_t parcel_id = stoull(parcel_data[3], &pos);
 
-        from_city.erase(remove(parcel_data[1].begin(), parcel_data[1].end(), ' '), parcel_data[1].end()); // Remove any whitespace characters
-        to_city.erase(remove(parcel_data[2].begin(), parcel_data[2].end(), ' '), parcel_data[2].end()); // Remove any whitespace characters
+        parcel_data[1].erase(remove(parcel_data[1].begin(), parcel_data[1].end(), ' '), parcel_data[1].end()); // Remove any whitespace characters
+        parcel_data[2].erase(remove(parcel_data[2].begin(), parcel_data[2].end(), ' '), parcel_data[2].end()); // Remove any whitespace characters
+
+        string from_city = parcel_data[1];
+        string to_city = parcel_data[2];
 
         parcels newparcel(parcel_id, parcel_volume, from_city, to_city);
         list_of_parcels.push_back(newparcel); // Add the parcel to the storeage container
