@@ -239,8 +239,8 @@ int main()
                             continue;
                         else if (!isdigit(c))
                             throw invalid_argument("Distance value must only contain digits!");
-                        if (char_counter > 4)
-                            throw out_of_range("Cities in the map must be in Southern Ontario and thus within driving distance. Distances are in kilometers.");
+                        if (char_counter > 15)
+                            throw out_of_range("Distances are in kilometers.");
                     }
                 }
 
@@ -273,7 +273,7 @@ int main()
     {
         string city_1 = map_entry.at(0);
         string city_2 = map_entry.at(1);
-        /* Extract the distance between citites as an integer value. */
+        /* Extract the distance between cities as an integer value. */
         try 
         {
             size_t pos;
@@ -282,9 +282,9 @@ int main()
             {
                 throw invalid_argument("Trailing characters after number!");
             }
-            if (x > 1000)
+            if (x > 100000000000000)
             {
-                throw invalid_argument("Distance is too far, cities must be within Southern Ontario.");
+                throw invalid_argument("Make sure to input your distances in kilometers.");
             }
         }
 

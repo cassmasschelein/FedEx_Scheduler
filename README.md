@@ -2,9 +2,9 @@
 
 This program schedules parcels for delivery by assigning parcels to trucks and determining the route that each truck will take. Multiple scheduling options are offered so that a decision can be made about which route to take, with well packed trucks and short, efficient routes.
 
-The program takes three files, one containing map data, one containing parcel data, and one containing truck data. The corresponding files must be named map-data.csv, parcel-data.csv, and truck-data.csv respectively. 
+The program takes three files, one containing map data, one containing parcel data, and one containing truck data. The corresponding files must be named `map-data.csv`, `parcel-data.csv`, and `truck-data.csv` respectively. 
 
-Every parcel must have an ID, source city, destination city, and a volume in cubic centimeters. This must be entered into the parcel file in this exact order with values separated by commas and each parcel on a new line. A parcels ID is unique, that is, no two parcels can have the same ID. An example of a parcel-data.csv file is as follows.
+Every parcel must have an ID, source city, destination city, and a volume in cubic centimeters. This must be entered into the parcel file in this exact order with values separated by commas and each parcel on a new line. A parcels ID is unique, that is, no two parcels can have the same ID. An example of a `parcel-data.csv` file is as follows.
 
 
 | 18 | London | Hamilton | 19 |
@@ -25,7 +25,7 @@ Every parcel must have an ID, source city, destination city, and a volume in cub
 |13| Guelph| Hamilton| 15|
 
 
-Every truck also has a unique ID. Trucks also have a maximum capacity in cubic centimeters, and as you load parcels into the truck the total volume of all parcels added cannot exceed the maximum capacity. A truck will also have a route that it will take to deliver the parcels that get loaded. An empty truck has an ID and maximum capacity. This must be entered into the truck file in this exact order with values separated by commas and each truck on a new line. An example of a truck-data.csv file is as follows.
+Every truck also has a unique ID. Trucks also have a maximum capacity in cubic centimeters, and as you load parcels into the truck the total volume of all parcels added cannot exceed the maximum capacity. A truck will also have a route that it will take to deliver the parcels that get loaded. An empty truck has an ID and maximum capacity. This must be entered into the truck file in this exact order with values separated by commas and each truck on a new line. An example of a `truck-data.csv` file is as follows.
 
 |3| 35|
 |:---|:---|
@@ -37,7 +37,7 @@ Every truck also has a unique ID. Trucks also have a maximum capacity in cubic c
 
 All trucks and all parcels will start from a common location called the depot. In this case the depot is set to Toronto.
 
-A map must be constructed from the map data file. Each entry in this file must contain two cities and the respective distance between them in kilometers. There must be a map entry for every city that a parcel must be delivered to. An example of a map-data.csv file is as follows.
+A map must be constructed from the map data file. Each entry in this file must contain two cities and the respective distance between them in kilometers. There must be a map entry for every city that a parcel must be delivered to. An example of a `map-data.csv` file is as follows.
 
 Belleville| Guelph| 265
 |:---|:---|:---|
@@ -98,6 +98,9 @@ Oakville| Windsor| 333
 
 In this program the file domain.hpp defines the classes necessary to represent the parcels, trucks, and fleet of trucks. A fleet keeps track of the trucks and also can report on statistics about the trucks such as average distance travelled and average capacity used of all the trucks in this fleet.
 
-The file schedule.hpp defines the different scheduling algorithms to be implemented. Here parcels and trucks are ordered based on priority sequence and parcels are loaded onto trucks accordingly. Three different scheduling algorithms are implemented. The basic scheduler theScheduler implements a scheduling algorithm that will load parcels onto trucks by randomly picking a parcel loading it onto a random truck until all parcels have been picked. The mostparcelScheduler implements a scheduling algorithm that will order the parcels to be loaded onto trucks in a priority sequence that loads the parcels with smaller volumes first. This priority queue of parcels is loaded onto trucks one by one. A truck is chosen based on the priority queue of available trucks. The potential trucks are ordered based on largest capacity, and then we take a subset of this list of trucks who have enough available space to fit the parcel. Of that subset of trucks priority is given to those who have the parcel destination city already in their route. This algorithm generates a route that packs the most parcels onto the least trucks by prioritizing smaller parcels and larger trucks. The shortrouteScheduler implements a scheduling algorithm that will order the parcels to be loaded onto trucks in a priority sequence that loads the parcels with the same destination sequentially. This priority queue of parcels is loaded onto trucks one by one. A truck is chosen based on the priority queue of available trucks. The potential trucks are ordered based on largest capacity, and then we take a subset of this list of trucks who have enough available space to fit the parcel. Of that subset of trucks priority is given to those who have the parcel destination city already in their route. This algorithm generates a route that packs trucks with parcels all headed to the same destination. This will result in shorter routes.
+The file schedule.hpp defines three different scheduling algorithms to be implemented. These algorithms take the parcels and trucks that a user uploads and then sorts them into priority queues to be used for loading parcels onto trucks. Three different scheduling algorithms are implemented. 
+1. The basic scheduler `theScheduler` implements a scheduling algorithm that will load parcels onto trucks by randomly picking a parcel loading it onto a random truck until all parcels have been picked.
+2. The `mostparcelScheduler` implements a scheduling algorithm that will order the parcels to be loaded onto trucks in a priority sequence that loads the parcels with smaller volumes first. This priority queue of parcels is loaded onto trucks one by one. A truck is chosen based on the priority queue of available trucks. The potential trucks are ordered based on largest capacity, and then we take a subset of this list of trucks who have enough available space to fit the parcel. Of that subset of trucks priority is given to those who have the parcel destination city already in their route. This algorithm generates a route that packs the most parcels onto the least trucks by prioritizing smaller parcels and larger trucks.
+3. The `shortrouteScheduler` implements a scheduling algorithm that will order the parcels to be loaded onto trucks in a priority sequence that loads the parcels with the same destination sequentially. This priority queue of parcels is loaded onto trucks one by one. A truck is chosen based on the priority queue of available trucks. The potential trucks are ordered based on largest capacity, and then we take a subset of this list of trucks who have enough available space to fit the parcel. Of that subset of trucks priority is given to those who have the parcel destination city already in their route. This algorithm generates a route that packs trucks with parcels all headed to the same destination. This will result in shorter routes.
 
 The program runs these various scheduling algorithms for the given parcels and trucks and outputs performance statistics regarding the average and standard deviation for free volume in loaded trucks, the average and standard deviation for the capacity used in loaded trucks, and the average and standard deviation for the distance travelled for loaded trucks in this fleet. 
