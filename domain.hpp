@@ -121,19 +121,19 @@ class trucks
 
 public:
     /* Constructor with arguments read from the input data file truck_data.txt. A truck has a unique ID, capacity, available space, route, depot, and parcels. */
-    trucks(const uint64_t &_id, const uint64_t &_cap, const string &_depot) : avail_space(_cap), t_id(_id), t_cap(_cap), depot(_depot) 
+    trucks(const uint64_t &_id, const uint64_t &_cap) : avail_space(_cap), t_id(_id), t_cap(_cap), depot(COMMON_DEPOT) 
     {
         if (t_id > 100000) // The ID is not small and unique
         {
             throw truck_invalidation::unique_id();
         }
 
-        if (depot != common_depot) // The truck is not starting at the depot
+        if (depot != COMMON_DEPOT) // The truck is not starting at the depot
         {
             throw truck_invalidation::mismatch_depot();
         }
 
-        route.push_back(_depot); // Add the depot as the first stop on the route
+        route.push_back(depot); // Add the depot as the first stop on the route
         parcels_list = vector<uint64_t>(0); // A list of parcels on this truck
         total_trucks++;
         truck_number = total_trucks;
@@ -155,7 +155,7 @@ public:
         {
             parcels_list.push_back(parcel.p_id);
             avail_space -= parcel.p_vol;
-            if (find(route.begin(), route.end(), parcel.dest_city) != route.end()) // If the parcel destination is not in the route, add it to the end of the route
+            if (find(route.begin(), route.end(), parcel.dest_city) == route.end()) // If the parcel destination is not in the route, add it to the end of the route
                 route.push_back(parcel.dest_city);
             return true;
         }
@@ -198,7 +198,6 @@ private:
     uint64_t t_id;
     uint64_t t_cap;
     string depot; // The depot where this truck will be starting from
-    inline static const string common_depot = COMMON_DEPOT;
     inline static uint64_t total_trucks = 0; // Keep track of how many trucks we have
     uint64_t truck_number; // This trucks number
 };
@@ -285,10 +284,11 @@ public:
     {
         uint64_t counter = 0;
         /* Check if the truck has already been added to the fleet. */
-        for (trucks curr_truck : f_trucks)
+        for (trucks &curr_truck : f_trucks)
         {
             if (curr_truck.t_id == truck.t_id) // Check by ID since IDs are unique
                 counter += 1;
+                // throw some kind of unique id error
         }
         if (counter == 0) // The truck has not already been added to the fleet
         {

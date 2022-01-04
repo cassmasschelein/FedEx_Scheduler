@@ -86,6 +86,7 @@ int main()
                 return -1;
             }
         }
+
         truck_file_contents.push_back(row); // Add the row vector to the data vector
     }
 
@@ -116,14 +117,12 @@ int main()
             arg_counter++;
             // Check that a line in the data file has the correct number of entries
             if (arg_counter > 4)
-            {
                 throw invalid_argument("Too many data entries!");
-            }
-
+            
             try
             {
-                if (arg_counter == 1) // Validate the parcel ID
-                {
+                if (arg_counter == 1 or arg_counter == 4) // Validate parcel ID and volume
+                {    
                     uint64_t char_counter = 0;
                     for (const char &c : entry)
                     {
@@ -131,29 +130,16 @@ int main()
                         if (isspace(c) and char_counter == 1) // Ignore leading space character
                             continue;
                         else if (!isdigit(c))
-                            throw invalid_argument("ID value must only contain digits!");
-                        if (char_counter > 6)
-                            throw out_of_range("ID values should be small and unique.");
+                            throw invalid_argument("ID and volume must only contain digits!");
                     }
-                }
 
-                else if (arg_counter == 4) // Validate the parcel volume
-                {
-                    uint64_t char_counter = 0;
-                    for (const char &c : entry)
-                    {
-                        char_counter++;
-                        if (isspace(c) and char_counter == 1) // Ignore leading space character
-                            continue;
-                        else if (!isdigit(c))
-                            throw invalid_argument("Volume of the parcel must be an integer value!");
-                        if (char_counter > 5)
-                            throw out_of_range("Truck capacity must be a realistic value and in units cm^3.");
-                    }
+                    entry.erase(remove(entry.begin(), entry.end(), ' '), entry.end()); // Remove whitespace characters
+                    parcel_row.push_back(entry);
                 }
 
                 else if (arg_counter == 2 or arg_counter == 3) // Validate the to and from city names
                 {
+                    string city = "";
                     uint64_t char_counter = 0;
                     for (const char &c : entry)
                     {
@@ -162,11 +148,13 @@ int main()
                             continue;
                         else if (!isalpha(c))
                             throw invalid_argument("City name must only contain alphabet characters!");
+                        else
+                            city.push_back(c);
                     }
+                    parcel_row.push_back(city);
                 }
-
-                parcel_row.push_back(entry); // Add the comma separated value to a vector
             }
+            
             catch(const invalid_argument &ex)
             {
                 cerr << "Invalid data entry: " << entry << " found on line " << line_number << " of the parcel-data.csv file. " << ex.what() << '\n';
@@ -220,6 +208,7 @@ int main()
                 if (arg_counter == 1 or arg_counter == 2) // Validate the city names
                 {
                     uint64_t char_counter = 0;
+                    string city = "";
                     for (const char &c : entry)
                     {
                         char_counter++;
@@ -227,7 +216,10 @@ int main()
                             continue;
                         else if (!isalpha(c))
                             throw invalid_argument("City name must only contain alphabet characters!");
+                        else
+                            city.push_back(c);
                     }
+                    map_row.push_back(city);
                 }
 
                 if (arg_counter == 3) // Validate the distance
@@ -240,12 +232,11 @@ int main()
                             continue;
                         else if (!isdigit(c))
                             throw invalid_argument("Distance value must only contain digits!");
-                        if (char_counter > 15)
-                            throw out_of_range("Distances are in kilometers.");
                     }
-                }
 
-                map_row.push_back(entry); // Add the comma separated value to a vector
+                    entry.erase(remove(entry.begin(), entry.end(), ' '), entry.end()); // Remove whitespace characters
+                    map_row.push_back(entry);
+                }
             }
             catch(const invalid_argument &ex)
             {
@@ -269,6 +260,7 @@ int main()
     
     /* Run some scheduling experiments using the data that was read from the input files. */
     /* Use the data from the map-data.csv to create a distanceMap object and add corresponding map entries. */
+
     distanceMap newMap;
     for (vector<string> &map_entry : map_file_contents)
     {
@@ -276,53 +268,51 @@ int main()
         try 
         {
             size_t pos;
-            uint64_t x = stoull(map_entry[2], &pos);
-            if (pos < entry.size()) 
+            uint64_t distance = stoull(map_entry[2], &pos);
+            if (pos < map_entry[2].size()) 
             {
                 throw invalid_argument("Trailing characters after number!");
             }
-            if (x > 100000000000000)
-            {
-                throw invalid_argument("Make sure to input your distances in kilometers.");
-            }
+
+            string city_1 = map_entry.at(0);
+            string city_2 = map_entry.at(1);
+
+            newMap.add_distance(city_1, city_2, distance); // Add the map entry into the distance map
         }
 
         catch (invalid_argument const &ex) 
         {
-            cerr << "Invalid distance: " << ex.what() << '\n';
+            cerr << "Invalid distance found: " << ex.what() << '\n';
             cout << correct_map_data;
             return -1;
         } 
         catch (out_of_range const &ex) 
         {
-            cerr << "Number out of range: " << ex.what() << '\n';
+            cerr << "Distance number out of range: " << ex.what() << '\n';
             cout << correct_map_data;
             return -1;
         }
-
-        size_t pos;
-        uint64_t distance = stoull(map_entry[2], &pos);
-
-        map_entry[0].erase(remove(map_entry[0].begin(), map_entry[0].end(), ' '), map_entry[0].end()); // Remove any extra whitespace characters
-        map_entry[1].erase(remove(map_entry[1].begin(), map_entry[1].end(), ' '), map_entry[1].end()); // Remove any extra whitespace characters
-
-        string city_1 = map_entry.at(0);
-        string city_2 = map_entry.at(1);
-
-        newMap.add_distance(city_1, city_2, distance); // Add the map entry into the distance map
     }
     
     cout << "Created distance map for parcel delivery: \n";
     newMap.print_distance_map(); // Print the distance map to the terminal
 
     /* Use the data from the truck-data.csv to create truck objects and add them to a fleet of trucks. */
+    
     fleet newfleet;
     vector<trucks> list_of_trucks; // Store the trucks read from the file
     for (vector<uint64_t> &truck_data : truck_file_contents)
     {
-        trucks newtruck(truck_data[0], truck_data[1], COMMON_DEPOT);
-        newfleet.add_truck(newtruck);
-        list_of_trucks.push_back(newtruck);
+        try
+        {
+            trucks newtruck(truck_data[0], truck_data[1]);
+            newfleet.add_truck(newtruck);
+            list_of_trucks.push_back(newtruck);
+        }
+        catch(const exception &e)
+        {
+            cerr << e.what() << '\n';
+        }
     }
 
     /* Use the data from the parcel-data.csv to create parcel objects. */
@@ -332,71 +322,35 @@ int main()
         /* Validate the parcel ID. */
         try 
         {
-            size_t pos;
-            uint64_t y = stoull(parcel_data[0], &pos);
-            if (pos < entry.size()) 
-            {
-                throw invalid_argument("Trailing characters after number!");
-            }
-            if (y > 100000) // The ID is not valid
-            {
-                throw invalid_argument("Parcel ID is too long, pick something small and unique.");
-            }
+            size_t pos1;
+            size_t pos2;
+            uint64_t parcel_id = stoull(parcel_data[0], &pos1);
+            uint64_t parcel_volume = stoull(parcel_data[3], &pos2);
+            if (pos1 < parcel_data[0].size()) 
+                throw invalid_argument("Trailing characters after parcel ID!");
+            
+            if (pos2 < parcel_data[3].size())
+                throw invalid_argument("Trailing characters after parcel volume!");
+
+            string from_city = parcel_data[1];
+            string to_city = parcel_data[2];
+
+            parcels newparcel(parcel_id, parcel_volume, from_city, to_city);
+            list_of_parcels.push_back(newparcel); // Add the parcel to the storeage container
         }
 
         catch (invalid_argument const &ex) 
         {
-            cerr << "Invalid parcel ID: " << ex.what() << '\n';
+            cerr << "Invalid number: " << ex.what() << '\n';
             cout << correct_parcel_data;
             return -1;
         } 
         catch (out_of_range const &ex) 
         {
-            cerr << "Parcel ID out of range: " << ex.what() << '\n';
+            cerr << "Invalid number: " << ex.what() << '\n';
             cout << correct_parcel_data;
             return -1;
         }
-
-        /* Validate the parcel volume. */
-        try 
-        {
-            size_t pos;
-            uint64_t z = stoull(parcel_data[3], &pos);
-            if (pos < entry.size()) 
-            {
-                throw invalid_argument("Trailing characters after number!");
-            }
-            if (z > 100000) // The volume is not valid
-            {
-                throw invalid_argument("Parcel volume must be in cm^3. Check your units.");
-            }
-        }
-
-        catch (invalid_argument const &ex) 
-        {
-            cerr << "Invalid parcel volume: " << ex.what() << '\n';
-            cout << correct_parcel_data;
-            return -1;
-        } 
-        catch (out_of_range const &ex) 
-        {
-            cerr << "Parcel volume out of range: " << ex.what() << '\n';
-            cout << correct_parcel_data;
-            return -1;
-        }
-
-        size_t pos;
-        uint64_t parcel_volume = stoull(parcel_data[0], &pos);
-        uint64_t parcel_id = stoull(parcel_data[3], &pos);
-
-        parcel_data[1].erase(remove(parcel_data[1].begin(), parcel_data[1].end(), ' '), parcel_data[1].end()); // Remove any whitespace characters
-        parcel_data[2].erase(remove(parcel_data[2].begin(), parcel_data[2].end(), ' '), parcel_data[2].end()); // Remove any whitespace characters
-
-        string from_city = parcel_data[1];
-        string to_city = parcel_data[2];
-
-        parcels newparcel(parcel_id, parcel_volume, from_city, to_city);
-        list_of_parcels.push_back(newparcel); // Add the parcel to the storeage container
     }
 
     cout << "Generating possible delivery schedules to deliver your parcels...\n";
@@ -417,4 +371,5 @@ int main()
     route_stats << "Most Parcels" << "," << newfleet.free_vol_in_used_trucks() << "," << newfleet.avg_capacity_used() << "," << newfleet.std_dev_capacity_used() << "," << newfleet.avg_distance_travelled(newMap) << "," << newfleet.std_dev_capacity_used() << "/n";
     newfleet.print_fleet(); // Print out the fleet schedule per this scheduling algorithm
     route_stats.close();
+
 }

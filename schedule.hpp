@@ -114,7 +114,7 @@ public:
      * 
      * @return A list of parcels that could not get loaded on trucks due to lack of capacity
      */
-    virtual vector<parcels> schedule()
+    vector<parcels> schedule()
     {
         vector<parcels> not_packed_parcels;
 
@@ -144,17 +144,17 @@ private:
  * @brief A small package large truck scheduler that determines what parcels go on which trucks, and what route the trucks wil take
  * 
  */
-class mostparcelScheduler : public theScheduler
+class mostparcelScheduler
 {
 public:
-    mostparcelScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : theScheduler(_parcel_list, _truck_list) {}
+    mostparcelScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : truck_list(_truck_list), parcel_list(_parcel_list) {}
 
     /**
      * @brief Schedule parcels on trucks, priority given to smaller parcels and larger trucks to pack most parcels and use least trucks
      * 
      * @return A list of parcels that could not get loaded on trucks due to lack of capacity
      */
-    virtual vector<parcels> schedule()
+    vector<parcels> schedule()
     {
         /* Add the parcels to the parcel queue in priority sequence. */
         for (const parcels &parcel : parcel_list)
@@ -162,11 +162,11 @@ public:
             /* Check if the parcel queue has items and the given parcel has a lower priority than the last parcel in the queue. */
             if (not parcel_queue.empty() and not smaller_volume_parcel(parcel, parcel_queue.at(parcel_queue.size() - 1)))
             {
-                int64_t i = parcel_queue.size() - 1;
+                uint64_t i = parcel_queue.size();
                 /* Find where in the priority queue the parcel should be inserted. */
-                while (i >= 0 and not smaller_volume_parcel(parcel, parcel_queue[i]))
+                while (i > 0 and not smaller_volume_parcel(parcel, parcel_queue[i - 1]))
                     i -= 1;
-                parcel_queue.insert(parcel_queue.begin() + i + 1, parcel);
+                parcel_queue.insert(parcel_queue.begin() + i, parcel);
             }
             else // The queue is empty so add the parcel to the queue
                 parcel_queue.push_back(parcel);
@@ -176,6 +176,7 @@ public:
         vector<parcels> not_packed_parcels;
         while (not parcel_queue.empty())
         {   
+            truck_queue.clear(); // Re-initialize the queue for this parcel
             parcels parcel = parcel_queue[parcel_queue.size() - 1];
             parcel_queue.pop_back(); // Remove the last item in the parcel queue
 
@@ -196,11 +197,11 @@ public:
                     if (not truck_queue.empty() and not larger_volume_truck(truck, truck_queue.at(truck_queue.size() - 1)))
                     {
                         /* Check if the truck queue has items and the given truck has a lower priority than the last truck in the queue. */
-                        int64_t i = truck_queue.size() - 1;
+                        uint64_t i = truck_queue.size();
                         /* Find where in the priority queue the truck should be inserted. */
-                        while (i >= 0 and not larger_volume_truck(truck, truck_queue[i]))
+                        while (i > 0 and not larger_volume_truck(truck, truck_queue[i - 1]))
                             i -= 1;
-                        truck_queue.insert(truck_queue.begin() + i + 1, truck);
+                        truck_queue.insert(truck_queue.begin() + i, truck);
                     }
                     else // The queue is empty so add the truck to the queue
                         truck_queue.push_back(truck);
@@ -223,17 +224,17 @@ private:
  * @brief A small parcel destination large truck scheduler that determines what parcels go on which trucks, and what route the trucks wil take
  * 
  */
-class shortrouteScheduler : public theScheduler
+class shortrouteScheduler
 {
 public:
-    shortrouteScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : theScheduler(_parcel_list, _truck_list) {}
+    shortrouteScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : truck_list(_truck_list), parcel_list(_parcel_list) {}
 
     /**
      * @brief Schedule parcels on trucks, priority given to parcels with smaller destinations and larger trucks to put parcels with same destination on same trucks
      * 
      * @return A list of parcels that could not get loaded on trucks due to lack of capacity
      */
-    virtual vector<parcels> schedule()
+    vector<parcels> schedule()
     {
         /* Add the parcels to the parcel queue in priority sequence. */
         for (const parcels &parcel : parcel_list)
@@ -241,11 +242,11 @@ public:
             /* Check if the parcel queue has items and the given parcel has a lower priority than the last parcel in the queue. */
             if (not parcel_queue.empty() and not smaller_destination_parcel(parcel, parcel_queue.at(parcel_queue.size() - 1)))
             {
-                int64_t i = parcel_queue.size() - 1;
+                uint64_t i = parcel_queue.size();
                 /* Find where in the priority queue the parcel should be inserted. */
-                while (i >= 0 and not smaller_destination_parcel(parcel, parcel_queue[i]))
+                while (i > 0 and not smaller_destination_parcel(parcel, parcel_queue[i - 1]))
                     i -= 1;
-                parcel_queue.insert(parcel_queue.begin() + i + 1, parcel);
+                parcel_queue.insert(parcel_queue.begin() + i, parcel);
             }
             else // The queue is empty so add the parcel to the queue
                 parcel_queue.push_back(parcel);
@@ -275,11 +276,11 @@ public:
                     if (not truck_queue.empty() and not larger_volume_truck(truck, truck_queue.at(truck_queue.size() - 1)))
                     {
                         /* Check if the truck queue has items and the given truck has a lower priority than the last truck in the queue. */
-                        int64_t i = truck_queue.size() - 1;
+                        uint64_t i = truck_queue.size();
                         /* Find where in the priority queue the truck should be inserted. */
-                        while (i >= 0 and not larger_volume_truck(truck, truck_queue[i]))
+                        while (i > 0 and not larger_volume_truck(truck, truck_queue[i - 1]))
                             i -= 1;
-                        truck_queue.insert(truck_queue.begin() + i + 1, truck);
+                        truck_queue.insert(truck_queue.begin() + i, truck);
                     }
                     else // The queue is empty so add the truck to the queue
                         truck_queue.push_back(truck);
