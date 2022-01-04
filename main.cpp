@@ -299,14 +299,12 @@ int main()
 
     /* Use the data from the truck-data.csv to create truck objects and add them to a fleet of trucks. */
     
-    fleet newfleet;
     vector<trucks> list_of_trucks; // Store the trucks read from the file
     for (vector<uint64_t> &truck_data : truck_file_contents)
     {
         try
         {
             trucks newtruck(truck_data[0], truck_data[1]);
-            newfleet.add_truck(newtruck);
             list_of_trucks.push_back(newtruck);
         }
         catch(const exception &e)
@@ -366,10 +364,25 @@ int main()
     mostparcelScheduler pack_most_parcels(list_of_parcels, list_of_trucks); // Create clones to use in each scheduling algorithm
     vector<parcels> unpacked_parcels = pack_most_parcels.schedule();
 
+    /* Add these trucks to your fleet to go out. */
+
+    fleet mostparcelfleet;
+    for (const trucks &truck : list_of_trucks)
+    {
+        try
+        {
+            mostparcelfleet.add_truck(truck);
+        }
+        catch(const exception &e)
+        {
+            cerr << e.what() << '\n';
+        }
+    }
+
     /* Write the statistics to the file. */
-    route_stats << "Scheduler" << "," << "Free Vol in Used Trucks" << "," << "Avg Capacity Used" << "," << "Std Dev Avg Capacity" << "," << "Avg Dist" << "," << "Std Dev Dist" << "\n";
-    route_stats << "Most Parcels" << "," << newfleet.free_vol_in_used_trucks() << "," << newfleet.avg_capacity_used() << "," << newfleet.std_dev_capacity_used() << "," << newfleet.avg_distance_travelled(newMap) << "," << newfleet.std_dev_capacity_used() << "/n";
-    newfleet.print_fleet(); // Print out the fleet schedule per this scheduling algorithm
+    route_stats << "Scheduler" << "," << "Free Vol in Used Trucks (cm^3)" << "," << "Avg Capacity Used (%)" << "," << "Std Dev Avg Capacity" << "," << "Avg Dist (km)" << "," << "Std Dev Dist" << "\n";
+    route_stats << "Most Parcels" << "," << mostparcelfleet.free_vol_in_used_trucks() << "," << mostparcelfleet.avg_capacity_used() << "," << "+-" << mostparcelfleet.std_dev_capacity_used() << "," << mostparcelfleet.avg_distance_travelled(newMap) << "," << "+-" << mostparcelfleet.std_dev_distance_travelled(newMap);
+    mostparcelfleet.print_fleet(); // Print out the fleet schedule per this scheduling algorithm
     route_stats.close();
 
 }

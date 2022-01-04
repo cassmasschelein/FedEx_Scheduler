@@ -187,6 +187,7 @@ public:
                 if (truck.avail_space >= parcel.volume())
                     truck_candidates.push_back(truck);
             }
+
             if (truck_candidates.empty())
                 not_packed_parcels.push_back(parcel); // We are unable to deliver the parcel
             else
@@ -207,15 +208,25 @@ public:
                         truck_queue.push_back(truck);
                 }
                 /* Pack the parcel in the highest priority truck (the last truck in the truck queue). */
-                trucks pack_truck = truck_queue.at(truck_queue.size() - 1); 
-                pack_truck.pack_truck(parcel);
+                trucks load_truck = truck_queue.at(truck_queue.size() - 1); 
+                uint64_t index = 0;
+
+                for (trucks &truck : truck_list)
+                {
+                    if (truck.my_id() == load_truck.my_id())
+                    {
+                        truck_list[index].pack_truck(parcel);
+                        break;
+                    }
+                    index += 1;
+                }
             }
         }
         return not_packed_parcels;
     }
 private:
-    vector<trucks> truck_list; // The list of trucks that are available to pack
-    vector<parcels> parcel_list; // The list of parcels to be packed onto trucks
+    vector<trucks> &truck_list; // The list of trucks that are available to pack
+    const vector<parcels> &parcel_list; // The list of parcels to be packed onto trucks
     vector<trucks> truck_queue; // The list of trucks available to pack in priority sequence
     vector<parcels> parcel_queue; // The list of parcels to be packed onto trucks in priority sequence
 };

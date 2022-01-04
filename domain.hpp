@@ -172,6 +172,11 @@ public:
         return t_cap;
     }
 
+    uint64_t my_id() const
+    {
+        return t_id;
+    }
+
     /**
      * @brief A function that returns the capacity that has been used for a given truck
      * 
@@ -415,7 +420,7 @@ public:
         {
             for (const trucks &truck : f_trucks)
             {
-                for (uint64_t i = 0; i < truck.route.size(); i++)
+                for (uint64_t i = 0; i < truck.route.size() - 1; i++)
                 {
                     distance_travel += dmap.distance(truck.route[i], truck.route[i + 1]); 
                 }
@@ -444,7 +449,7 @@ public:
             for (const trucks &truck : f_trucks)
             {
                 uint64_t this_truck = 0;
-                for (uint64_t i = 0; i < truck.route.size(); i++)
+                for (uint64_t i = 0; i < truck.route.size() - 1; i++)
                 {
                     this_truck += dmap.distance(truck.route[i], truck.route[i + 1]);
                 }
