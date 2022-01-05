@@ -235,7 +235,7 @@ public:
                 /* Find where in the priority queue the parcel should be inserted. */
                 while (i > 0 and not smaller_volume_parcel(parcel, parcel_queue[i - 1]))
                     i -= 1;
-                parcel_queue.insert(parcel_queue.begin() + i, parcel);
+                parcel_queue.insert(parcel_queue.begin() + (int64_t)i, parcel);
             }
             else // The queue is empty so add the parcel to the queue
                 parcel_queue.push_back(parcel);
@@ -283,7 +283,7 @@ public:
                         /* Find where in the priority queue the truck should be inserted. */
                         while (i > 0 and not larger_volume_truck(truck, truck_queue[i - 1]))
                             i -= 1;
-                        truck_queue.insert(truck_queue.begin() + i, truck);
+                        truck_queue.insert(truck_queue.begin() + (int64_t)i, truck);
                     }
                     else // The queue is empty so add the truck to the queue
                         truck_queue.push_back(truck);
@@ -364,7 +364,7 @@ public:
                 /* Find where in the priority queue the parcel should be inserted. */
                 while (i > 0 and not smaller_destination_parcel(parcel, parcel_queue[i - 1]))
                     i -= 1;
-                parcel_queue.insert(parcel_queue.begin() + i, parcel);
+                parcel_queue.insert(parcel_queue.begin() + (int64_t)i, parcel);
             }
             else // The queue is empty so add the parcel to the queue
                 parcel_queue.push_back(parcel);
@@ -411,7 +411,7 @@ public:
                         /* Find where in the priority queue the truck should be inserted. */
                         while (i > 0 and not larger_volume_truck(truck, truck_queue[i - 1]))
                             i -= 1;
-                        truck_queue.insert(truck_queue.begin() + i, truck);
+                        truck_queue.insert(truck_queue.begin() + (int64_t)i, truck);
                     }
                     else // The queue is empty so add the truck to the queue
                         truck_queue.push_back(truck);

@@ -31,16 +31,7 @@ using namespace std;
 void load_fleet(const vector<trucks> &list_of_trucks, fleet &newfleet)
 {
     for (const trucks &truck : list_of_trucks)
-    {
-        try
-        {
-            newfleet.add_truck(truck);
-        }
-        catch(const exception &e)
-        {
-            cerr << e.what() << '\n';
-        }
-    }
+        newfleet.add_truck(truck);
 }
 
 int main(int argc, char* argv[])
@@ -383,7 +374,7 @@ int main(int argc, char* argv[])
     {
         if (count(unique_truck.begin(), unique_truck.end(), id) != 1)
         {
-            throw truck_invalidation::unique_id();
+            cout << "The parcel ID must be unique! \n";
             return -1;
         }
     }
@@ -433,7 +424,7 @@ int main(int argc, char* argv[])
     {
         if (count(unique_parcel.begin(), unique_parcel.end(), id) != 1)
         {
-            throw parcel_invalidation::unique_id();
+            cout << "The parcel ID must be unique! \n";
             return -1;
         }
     }
@@ -463,15 +454,32 @@ int main(int argc, char* argv[])
     fleet mostparcelfleet;
     fleet shortroutefleet;
 
-    load_fleet(list_of_trucks_random, randomfleet);
-    load_fleet(list_of_trucks_most, mostparcelfleet);
-    load_fleet(list_of_trucks_short, shortroutefleet);
+    try
+    {
+        load_fleet(list_of_trucks_random, randomfleet);
+        load_fleet(list_of_trucks_most, mostparcelfleet);
+        load_fleet(list_of_trucks_short, shortroutefleet);
+    }
+    catch(const exception &e)
+    {
+        cerr << e.what() << '\n';
+    }
 
     /* Write the statistics to the output file. */
-    route_stats << "Scheduler" << ", " << "Free Volume in Used Trucks (cm^3)" << ", " << "Average Capacity Used (%)" << ", " << "Std Dev Average Capacity" << ", " << "Avg Distance (km)" << ", " << "Std Dev Distance" << "\n";
-    route_stats << "Random Parcels" << ", " << randomfleet.free_vol_in_used_trucks() << ", " << randomfleet.avg_capacity_used() << ", " << "+-" << randomfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << randomfleet.std_dev_distance_travelled(newMap) << "\n";
-    route_stats << "Most Parcels" << ", " << mostparcelfleet.free_vol_in_used_trucks() << ", " << mostparcelfleet.avg_capacity_used() << ", " << "+-" << mostparcelfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << mostparcelfleet.std_dev_distance_travelled(newMap) << "\n";
-    route_stats << "Short Route" << ", " << shortroutefleet.free_vol_in_used_trucks() << ", " << shortroutefleet.avg_capacity_used() << ", " << "+-" << shortroutefleet.std_dev_capacity_used() << ", " << shortroutefleet.avg_distance_travelled(newMap) << ", " << "+-" << shortroutefleet.std_dev_distance_travelled(newMap) << "\n";
+    
+    try
+    {
+        route_stats << "Scheduler" << ", " << "Free Volume in Used Trucks (cm^3)" << ", " << "Average Capacity Used (%)" << ", " << "Std Dev Average Capacity" << ", " << "Avg Distance (km)" << ", " << "Std Dev Distance" << "\n";
+        route_stats << "Random Parcels" << ", " << randomfleet.free_vol_in_used_trucks() << ", " << randomfleet.avg_capacity_used() << ", " << "+-" << randomfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << randomfleet.std_dev_distance_travelled(newMap) << "\n";
+        route_stats << "Most Parcels" << ", " << mostparcelfleet.free_vol_in_used_trucks() << ", " << mostparcelfleet.avg_capacity_used() << ", " << "+-" << mostparcelfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << mostparcelfleet.std_dev_distance_travelled(newMap) << "\n";
+        route_stats << "Short Route" << ", " << shortroutefleet.free_vol_in_used_trucks() << ", " << shortroutefleet.avg_capacity_used() << ", " << "+-" << shortroutefleet.std_dev_capacity_used() << ", " << shortroutefleet.avg_distance_travelled(newMap) << ", " << "+-" << shortroutefleet.std_dev_distance_travelled(newMap) << "\n";
+        
+    }
+    catch(const map_invalidation::map_error &e)
+    {
+        cerr << e.what() << '\n';
+        return -1;
+    }
     
     cout << "The scheduling algorithm that randomly packs parcels into trucks suggests using the following delivery routes: \n";
     randomfleet.print_fleet(); // Print out the fleet schedule for this scheduling algorithm

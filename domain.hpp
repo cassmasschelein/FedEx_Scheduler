@@ -58,48 +58,6 @@ namespace map_invalidation
 }
 
 /**
- * @brief Unique error messages for invalid parcels
- * 
- */
-namespace parcel_invalidation
-{
-    /**
-     * @brief Error message for when a parcel does not have a unique ID
-     * 
-     */
-    class unique_id : public invalid_argument
-    {
-        public:
-        /**
-         * @brief Construct a new unique id object
-         * 
-         */
-            unique_id() : invalid_argument("The parcel ID must be unique!"){};
-    };
-}
-
-/**
- * @brief Unique error messages for invalid trucks
- * 
- */
-namespace truck_invalidation
-{
-    /**
-     * @brief Error message for when a truck does not have a unique ID
-     * 
-     */
-    class unique_id : public invalid_argument
-    {
-        public:
-        /**
-         * @brief Construct a new unique id object
-         * 
-         */
-            unique_id() : invalid_argument("The truck ID must unique!"){};
-    };
-}
-
-/**
  * @brief Unique error messages for invalid fleets
  * 
  */
@@ -496,7 +454,7 @@ public:
             for (const trucks &truck : f_trucks)
             {
                 for (uint64_t i = 0; i < truck.route.size() - 1; i++)
-                    distance_travel += dmap.distance(truck.route[i], truck.route[i + 1]); 
+                    distance_travel += dmap.distance(truck.route[i], truck.route[i + 1]);
             }
             avg_distance = (double)distance_travel / (double)N;
         }
