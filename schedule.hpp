@@ -83,6 +83,10 @@ bool smaller_destination_parcel(const parcels &a, const parcels &b)
  */
 vector<trucks> on_route(vector<trucks> &potential_trucks, const parcels &p)
 {
+    /**
+     * @brief A list of trucks that have the parcel destination already on route
+     * 
+     */
     vector<trucks> route_trucks;
     for (const trucks &truck : potential_trucks)
     {
@@ -107,6 +111,12 @@ vector<trucks> on_route(vector<trucks> &potential_trucks, const parcels &p)
 class randomScheduler
 {
 public:
+    /**
+     * @brief Construct a new random Scheduler object
+     * 
+     * @param _parcel_list The list of parcels to be loaded on trucks and delivered
+     * @param _truck_list The list of trucks available for delivering parcels
+     */
     randomScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : truck_list(_truck_list), parcel_list(_parcel_list) {}
 
     /**
@@ -119,15 +129,28 @@ public:
         for (const parcels &parcel : parcel_list)
             parcel_queue.push_back(parcel);
         
-        /* Load the parcels onto random trucks. */
+        /**
+         * @brief A list of parcels that could not be loaded onto a truck for delivery
+         * 
+         */
         vector<parcels> not_packed_parcels;
+
+        /* Load the parcels onto random trucks. */
         while (not parcel_queue.empty())
         {   
+            /**
+             * @brief The parcel to be loaded onto a truck
+             * 
+             */
             parcels parcel = parcel_queue[parcel_queue.size() - 1];
             parcel_queue.pop_back(); // Remove the last item in the parcel queue
 
             /* Create a priority queue of trucks based on increasing volume. */
-            vector<trucks> truck_candidates; // A list of trucks this parcel will fit on to be sorted
+            /**
+             * @brief A list of trucks this parcel will fit on
+             * 
+             */
+            vector<trucks> truck_candidates;
             for (const trucks &truck : truck_list)
             {
                 if (truck.avail_space >= parcel.volume())
@@ -142,7 +165,11 @@ public:
                 random_device rd;
                 mt19937 mt(rd());
                 uniform_int_distribution<uint64_t> uid(0, avail_length - 1);
-                trucks load_truck = truck_candidates[uid(mt)]; // Select a random truck to pack the parcel on
+                /**
+                 * @brief A randomly choosen truck to load the parcel onto
+                 * 
+                 */
+                trucks load_truck = truck_candidates[uid(mt)];
 
                 uint64_t index = 0;
                 for (trucks &truck : truck_list)
@@ -159,9 +186,21 @@ public:
         return not_packed_parcels;
     }
 private:
-    vector<trucks> &truck_list; // The list of trucks that are available to pack
-    const vector<parcels> &parcel_list; // The list of parcels to be packed onto trucks
-    vector<parcels> parcel_queue; // The list of parcels to be packed onto trucks in priority sequence
+    /**
+     * @brief The list of trucks that are available for delivering parcels
+     * 
+     */
+    vector<trucks> &truck_list;
+    /**
+     * @brief The list of parcels that need to be delivered
+     * 
+     */
+    const vector<parcels> &parcel_list;
+    /**
+     * @brief The list of parcels to be packed onto trucks in priority sequence
+     * 
+     */
+    vector<parcels> parcel_queue;
 };
 
 /**
@@ -171,6 +210,12 @@ private:
 class mostparcelScheduler
 {
 public:
+    /**
+     * @brief Construct a new mostparcel Scheduler object
+     * 
+     * @param _parcel_list The list of parcels to be loaded on trucks and delivered
+     * @param _truck_list The list of trucks available for delivering parcels
+     */
     mostparcelScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : truck_list(_truck_list), parcel_list(_parcel_list) {}
 
     /**
@@ -196,16 +241,24 @@ public:
                 parcel_queue.push_back(parcel);
         }
 
-        /* Load the parcels onto the trucks in priority sequence. */
+        /**
+         * @brief A list of parcels that could not be loaded onto a truck for delivery
+         * 
+         */
         vector<parcels> not_packed_parcels;
+        /* Load the parcels onto the trucks in priority sequence. */
         while (not parcel_queue.empty())
         {   
             truck_queue.clear(); // Re-initialize the queue for this parcel
             parcels parcel = parcel_queue[parcel_queue.size() - 1];
             parcel_queue.pop_back(); // Remove the last item in the parcel queue
 
+            /**
+             * @brief A list of trucks this parcel will fit on to be sorted
+             * 
+             */
+            vector<trucks> truck_candidates;
             /* Create a priority queue of trucks based on increasing volume. */
-            vector<trucks> truck_candidates; // A list of trucks this parcel will fit on to be sorted
             for (const trucks &truck : truck_list)
             {
                 if (truck.avail_space >= parcel.volume())
@@ -216,7 +269,11 @@ public:
                 not_packed_parcels.push_back(parcel); // We are unable to deliver the parcel
             else
             {
-                vector<trucks> checked_route = on_route(truck_candidates, parcel); // A list of trucks that already have the parcel destination on their route
+                /**
+                 * @brief Generate a list of trucks that already have the parcel destination on their routes, or use the original list if no trucks are on route
+                 * 
+                 */
+                vector<trucks> checked_route = on_route(truck_candidates, parcel);
                 for (const trucks &truck : checked_route)
                 {
                     if (not truck_queue.empty() and not larger_volume_truck(truck, truck_queue.at(truck_queue.size() - 1)))
@@ -232,9 +289,13 @@ public:
                         truck_queue.push_back(truck);
                 }
                 /* Pack the parcel in the highest priority truck (the last truck in the truck queue). */
+                /**
+                 * @brief The truck with the highest priority
+                 * 
+                 */
                 trucks load_truck = truck_queue.at(truck_queue.size() - 1); 
                 uint64_t index = 0;
-
+                /* Pack the highest priority truck. */
                 for (trucks &truck : truck_list)
                 {
                     if (truck.my_id() == load_truck.my_id())
@@ -249,10 +310,26 @@ public:
         return not_packed_parcels;
     }
 private:
-    vector<trucks> &truck_list; // The list of trucks that are available to pack
-    const vector<parcels> &parcel_list; // The list of parcels to be packed onto trucks
-    vector<trucks> truck_queue; // The list of trucks available to pack in priority sequence
-    vector<parcels> parcel_queue; // The list of parcels to be packed onto trucks in priority sequence
+/**
+ * @brief The list of trucks that are available to pack
+ * 
+ */
+    vector<trucks> &truck_list;
+    /**
+     * @brief The list of parcels to be packed onto trucks
+     * 
+     */
+    const vector<parcels> &parcel_list;
+    /**
+     * @brief The list of trucks available to pack in priority sequence
+     * 
+     */
+    vector<trucks> truck_queue;
+    /**
+     * @brief The list of parcels to be packed onto trucks in priority sequence
+     * 
+     */
+    vector<parcels> parcel_queue;
 };
 
 /**
@@ -262,6 +339,12 @@ private:
 class shortrouteScheduler
 {
 public:
+    /**
+     * @brief Construct a new shortroute Scheduler object
+     * 
+     * @param _parcel_list The list of parcels to be loaded on trucks and delivered
+     * @param _truck_list The list of trucks available for delivering parcels
+     */
     shortrouteScheduler(const vector<parcels> &_parcel_list, vector<trucks> &_truck_list) : truck_list(_truck_list), parcel_list(_parcel_list) {}
 
     /**
@@ -287,16 +370,24 @@ public:
                 parcel_queue.push_back(parcel);
         }
 
-        /* Load the parcels onto the trucks in priority sequence. */
+        /**
+         * @brief A list of parcels that could not be loaded onto a truck for delivery
+         * 
+         */
         vector<parcels> not_packed_parcels;
+        /* Load the parcels onto the trucks in priority sequence. */
         while (not parcel_queue.empty())
         {   
             truck_queue.clear();
             parcels parcel = parcel_queue[parcel_queue.size() - 1];
             parcel_queue.pop_back(); // remove the last item in the parcel queue
 
+            /**
+             * @brief A list of trucks this parcel will fit on to be sorted
+             * 
+             */
+            vector<trucks> truck_candidates;
             /* Create a priority queue of trucks based on increasing volume. */
-            vector<trucks> truck_candidates; // A list of trucks this parcel will fit on to be sorted
             for (const trucks &truck : truck_list)
             {
                 if (truck.avail_space >= parcel.volume())
@@ -306,6 +397,10 @@ public:
                 not_packed_parcels.push_back(parcel); // We are unable to deliver the parcel
             else
             {
+                /**
+                 * @brief Generate a list of trucks that already have the parcel destination on their routes, or use the original list if no trucks are on route
+                 * 
+                 */
                 vector<trucks> checked_route = on_route(truck_candidates, parcel); // A list of trucks that already have the parcel destination on their route
                 for (const trucks &truck : checked_route)
                 {
@@ -322,6 +417,10 @@ public:
                         truck_queue.push_back(truck);
                 }
                 /* Pack the parcel in the highest priority truck (the last truck in the truck queue). */
+                /**
+                 * @brief The truck with the highest priority
+                 * 
+                 */
                 trucks load_truck = truck_queue.at(truck_queue.size() - 1); 
                 uint64_t index = 0;
 
@@ -340,8 +439,24 @@ public:
     }
 
 private:
-    vector<trucks> &truck_list; // The list of trucks that are available to pack
-    const vector<parcels> &parcel_list; // The list of parcels to be packed onto trucks
-    vector<trucks> truck_queue; // The list of trucks available to pack in priority sequence
-    vector<parcels> parcel_queue; // The list of parcels to be packed onto trucks in priority sequence
+    /**
+     * @brief The list of trucks that are available to pack
+     * 
+     */
+    vector<trucks> &truck_list;
+    /**
+     * @brief The list of parcels to be packed onto trucks
+     * 
+     */
+    const vector<parcels> &parcel_list;
+    /**
+     * @brief The list of trucks available to pack in priority sequence
+     * 
+     */
+    vector<trucks> truck_queue;
+    /**
+     * @brief The list of parcels to be packed onto trucks in priority sequence
+     * 
+     */
+    vector<parcels> parcel_queue;
 };

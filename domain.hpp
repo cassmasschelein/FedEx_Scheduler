@@ -25,42 +25,115 @@ using namespace std;
 /* This is the common depot where all trucks and parcels begin. */
 const string COMMON_DEPOT = "Toronto";
 
+/**
+ * @brief Unique error messages for invalid distance maps
+ * 
+ */
 namespace map_invalidation
 {
+    /**
+     * @brief Error message for when we are unable to look up a distance
+     * 
+     */
     class map_error : public invalid_argument
     {
         public:
+        /**
+         * @brief Construct a new map error object
+         * 
+         */
             map_error() : invalid_argument("These cities cannot be found in the Distance Map!"){};
     };
 
+    /**
+     * @brief Error message for when we try to look the distance between a city and itself
+     * 
+     */
     class city_error : public invalid_argument
     {
         public:
+        /**
+         * @brief Construct a new city error object
+         * 
+         */
             city_error() : invalid_argument("The source city and destination city must be different!"){};
     };
 }
 
+/**
+ * @brief Unique error messages for invalid parcels
+ * 
+ */
 namespace parcel_invalidation
 {
+    /**
+     * @brief Error message for when a parcel does not have a unique ID
+     * 
+     */
     class unique_id : public invalid_argument
     {
         public:
-            unique_id() : invalid_argument("The parcel ID must be small and unique!"){};
+        /**
+         * @brief Construct a new unique id object
+         * 
+         */
+            unique_id() : invalid_argument("The parcel ID must be unique!"){};
     };
 }
 
+/**
+ * @brief Unique error messages for invalid trucks
+ * 
+ */
 namespace truck_invalidation
 {
+    /**
+     * @brief Error message for when a truck does not have a unique ID
+     * 
+     */
     class unique_id : public invalid_argument
     {
         public:
-            unique_id() : invalid_argument("The truck ID must be small and unique!"){};
+        /**
+         * @brief Construct a new unique id object
+         * 
+         */
+            unique_id() : invalid_argument("The truck ID must unique!"){};
     };
 
+    /**
+     * @brief Error message for when the first stop on a trucks route is not the COMMON_DEPOT
+     * 
+     */
     class mismatch_depot : public invalid_argument
     {
         public:
+        /**
+         * @brief Construct a new mismatch depot object
+         * 
+         */
             mismatch_depot() : invalid_argument("The truck has the wrong depot for this fleet!"){};
+    };
+}
+
+/**
+ * @brief Unique error messages for invalid fleets
+ * 
+ */
+namespace fleet_invalidation
+{
+    /**
+     * @brief Error message for when a truck in a fleet does not have a unique ID
+     * 
+     */
+    class unique_id : public invalid_argument
+    {
+        public:
+        /**
+         * @brief Construct a new unique id object
+         * 
+         */
+            unique_id() : invalid_argument("All truck IDs in the fleet must be unique!"){};
     };
 }
 
@@ -73,28 +146,36 @@ class parcels
     friend class trucks;
 
 public:
-    /* Constructor with arguments read from the input data file parcel_data.txt. Pre-condition: the parcel already arrived at the depot. */
+    /**
+     * @brief Construct a new parcels object
+     * 
+     * @param this_id The parcels ID
+     * @param _vol The parcels volume
+     * @param _source_city The parcels source city
+     * @param _dest The parcels destination city
+     */
     parcels(const uint64_t &this_id, const uint64_t &_vol, const string &_source_city, const string &_dest) : p_id(this_id), p_vol(_vol), source_city(_source_city), dest_city(_dest)
     {
         /* A parcels source city and destination city cannot be the same. */
         if (source_city == dest_city)
             throw map_invalidation::city_error();
-        if (p_id > 100000) // A parcel ID must be unique
-        {
-            throw parcel_invalidation::unique_id();
-        }
     }
 
     /**
      * @brief Return the volume of a parcel
      * 
-     * @return volume in cm^3
+     * @return The volume in cm^3
      */
     uint64_t volume() const
     {
         return p_vol;
     }
 
+    /**
+     * @brief Return the parcels unique ID
+     * 
+     * @return The parcels ID value
+     */
     uint64_t this_id() const
     {
         return p_id;
@@ -111,8 +192,15 @@ public:
     }
 
 private:
-    /* Each parcel has an ID that is unique, volume, source city, and destination city where this parcel needs to go. */
+    /**
+     * @brief The parcels ID and volume respectively 
+     * 
+     */
     uint64_t p_id, p_vol;
+    /**
+     * @brief The parcels source city and destination city respectively 
+     * 
+     */
     string source_city, dest_city;
 };
 
@@ -125,28 +213,24 @@ class trucks
     friend class fleet;
 
 public:
-    /* Constructor with arguments read from the input data file truck_data.txt. A truck has a unique ID, capacity, available space, route, depot, and parcels. */
+    /**
+     * @brief Construct a new trucks object
+     * 
+     * @param _id The trucks ID
+     * @param _cap The trucks capacity
+     */
     trucks(const uint64_t &_id, const uint64_t &_cap) : avail_space(_cap), t_id(_id), t_cap(_cap), depot(COMMON_DEPOT) 
     {
-        if (t_id > 100000) // The ID is not small and unique
-        {
-            throw truck_invalidation::unique_id();
-        }
-
         if (depot != COMMON_DEPOT) // The truck is not starting at the depot
-        {
             throw truck_invalidation::mismatch_depot();
-        }
 
         route.push_back(depot); // Add the depot as the first stop on the route
         parcels_list = vector<uint64_t>(0); // A list of parcels on this truck
-        total_trucks++;
-        truck_number = total_trucks;
     }
 
     uint64_t avail_space; // Volume available in a truck to fill with parcels
     vector<string> route; // The route that a given truck will take
-    vector<uint64_t> parcels_list; // The list of parcels (by id) that are loaded onto this truck
+    vector<uint64_t> parcels_list; // The list of parcels (by ID) that are loaded onto this truck
 
     /**
      * @brief Load a parcel onto a truck
@@ -177,6 +261,11 @@ public:
         return t_cap;
     }
 
+    /**
+     * @brief Return the trucks unique ID
+     * 
+     * @return The trucks ID
+     */
     uint64_t my_id() const
     {
         return t_id;
@@ -193,23 +282,22 @@ public:
         return 100.0 - (percentage * 100.0);
     }
 
-    /**
-     * @brief Get the total number of trucks
-     * 
-     * @return The number of trucks that we have available to use
-     */
-    static uint64_t get_total_trucks()
-    {
-        return total_trucks;
-    }
-
 private:
-    /* Each truck has an ID and capacity that is read from the input file trucks.txt. */
+    /**
+     * @brief The trucks unique ID
+     * 
+     */
     uint64_t t_id;
+    /**
+     * @brief The trucks capacity (in cm^3)
+     * 
+     */
     uint64_t t_cap;
-    string depot; // The depot where this truck will be starting from
-    inline static uint64_t total_trucks = 0; // Keep track of how many trucks we have
-    uint64_t truck_number; // This trucks number
+    /**
+     * @brief The trucks starting location
+     * 
+     */
+    string depot;
 };
 
 /**
@@ -221,7 +309,10 @@ class distanceMap
     friend class fleet;
 
 public:
-    // The default constructor of this class with an empty map
+    /**
+     * @brief Construct a new distance Map object
+     * 
+     */
     distanceMap() {}
 
     /**
@@ -271,7 +362,11 @@ public:
     }
 
 private:
-    map<vector<string>, uint64_t> distance_map; // A map where each key is a tuple of the two cities and the value is the distance between them
+/**
+ * @brief A map where each key is a tuple of the two cities and the value is the distance between them
+ * 
+ */
+    map<vector<string>, uint64_t> distance_map;
 };
 
 
@@ -282,7 +377,10 @@ private:
 class fleet
 {
 public:
-    // The default constructor for this class with no trucks
+    /**
+     * @brief Construct a new fleet object
+     * 
+     */
     fleet() {}
 
     /**
@@ -297,8 +395,10 @@ public:
         for (trucks &curr_truck : f_trucks)
         {
             if (curr_truck.t_id == truck.t_id) // Check by ID since IDs are unique
+            {
                 counter += 1;
-                // throw some kind of unique id error
+                throw fleet_invalidation::unique_id();
+            }
         }
         if (counter == 0) // The truck has not already been added to the fleet
         {
@@ -322,17 +422,6 @@ public:
             }
             cout << "\n";
         }
-    }
-
-    /**
-     * @brief A function that returns the total number of trucks in this fleet
-     * 
-     * @return The total number of trucks
-     */
-    uint64_t number_of_trucks() const
-    {
-        // return f_trucks.size();
-        return trucks::get_total_trucks();
     }
 
     /**
@@ -461,6 +550,14 @@ public:
     }
 
 private:
-    vector<trucks> f_trucks; // The list of trucks in this fleet, stored in a vector
-    map<uint64_t, vector<uint64_t> > parcel_alloc; // A map of truck IDs in the fleet and the parcel IDs loaded in loading order
+/**
+ * @brief The list of trucks in this fleet, stored in a vector
+ * 
+ */
+    vector<trucks> f_trucks;
+    /**
+     * @brief A map of truck IDs in the fleet and the parcel IDs of the parcels to be loaded
+     * 
+     */
+    map<uint64_t, vector<uint64_t> > parcel_alloc;
 };
