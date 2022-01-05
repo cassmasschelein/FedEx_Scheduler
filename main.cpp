@@ -38,7 +38,7 @@ void load_fleet(const vector<trucks> &list_of_trucks, fleet &newfleet)
         }
         catch(const exception &e)
         {
-            std::cerr << e.what() << '\n';
+            cerr << e.what() << '\n';
         }
     }
 }
@@ -54,14 +54,14 @@ int main(int argc, char* argv[])
     /* Validate program argument. */
     if (argc < 2)
     {
-        std::cout << "This program must take the common depot as the single argument! Please include the depot location! \n";
-        std::cout << correct_common_depot;
+        cout << "This program must take the common depot as the single argument! Please include the depot location! \n";
+        cout << correct_common_depot;
         return -1;
     }
     else if (argc > 2)
     {
-        std::cout << "This program only takes one argument! Please only include the name of the depot location. \n";
-        std::cout << correct_common_depot;
+        cout << "This program only takes one argument! Please only include the name of the depot location. \n";
+        cout << correct_common_depot;
         return -1;
     }
     else
@@ -81,8 +81,8 @@ int main(int argc, char* argv[])
         }
         catch (const invalid_argument &ex) 
         {
-            std::cerr << "Invalid argument: " << ex.what() << '\n';
-            std::cout << correct_common_depot;
+            cerr << "Invalid argument: " << ex.what() << '\n';
+            cout << correct_common_depot;
             return -1;
         } 
     }
@@ -92,13 +92,13 @@ int main(int argc, char* argv[])
      * 
      */
     string COMMON_DEPOT = argv[1];
-    std::cout << "Reading file contents and preparing to create a delivery schedule for your parcels... \n";
+    cout << "Reading file contents and preparing to create a delivery schedule for your parcels... \n";
 
     /* Open the data file containing the truck information. */
     ifstream truck_data("truck-data.csv");
     if (!truck_data.is_open())
     {
-        std::cout << "Error opening truck data file!";
+        cout << "Error opening truck data file!";
         return -1;
     }
 
@@ -135,13 +135,13 @@ int main(int argc, char* argv[])
             catch (const invalid_argument &ex) 
             {
                 cerr << "Invalid data entry: " << entry << " on line" << line_number << " of the truck-data.csv file. " << ex.what() << '\n';
-                std::cout << correct_truck_data;
+                cout << correct_truck_data;
                 return -1;
             } 
             catch (const out_of_range &ex) 
             {
                 cerr << "Number out of range: " << entry << " on line" << line_number << " of truck-data.csv file." << '\n';
-                std::cout << correct_truck_data;
+                cout << correct_truck_data;
                 return -1;
             }
         }
@@ -149,14 +149,14 @@ int main(int argc, char* argv[])
         truck_file_contents.push_back(row); // Add the row vector to the truck data vector
     }
 
-    std::cout << "Truck data has been successfully read. \n";
+    cout << "Truck data has been successfully read. \n";
     truck_data.close();
 
     /* Open the data file containing the parcel information. */
     ifstream parcel_data("parcel-data.csv");
     if (!parcel_data.is_open())
     {
-        std::cout << "Error opening parcel data file!";
+        cout << "Error opening parcel data file!";
         return -1;
     }
 
@@ -217,28 +217,28 @@ int main(int argc, char* argv[])
             catch(const invalid_argument &ex)
             {
                 cerr << "Invalid data entry: " << entry << " found on line " << line_number << " of the parcel-data.csv file. " << ex.what() << '\n';
-                std::cout << correct_parcel_data;
+                cout << correct_parcel_data;
                 return -1;
             }
 
             catch (const out_of_range &ex) 
             {
                 cerr << "Number out of range: " << entry << " found on line" << line_number << " of the parcel-data.csv file. " << ex.what() << '\n';
-                std::cout << correct_parcel_data;
+                cout << correct_parcel_data;
                 return -1;
             }
         }
         parcel_file_contents.push_back(parcel_row); // Add the row vector to the parcel data vector
     }
 
-    std::cout << "Parcel data has been successfully read. \n";
+    cout << "Parcel data has been successfully read. \n";
     parcel_data.close();
 
     /* Open the data file containing the map information. */
     ifstream map_data("map-data.csv");
     if (!map_data.is_open())
     {
-        std::cout << "Error opening map data file!";
+        cout << "Error opening map data file!";
         return -1;
     }
 
@@ -297,22 +297,22 @@ int main(int argc, char* argv[])
             }
             catch(const invalid_argument &ex)
             {
-                cerr << "Invalid data entry:" << entry << "Found on line " << line_number << " of the map-data.csv file. " << ex.what() << '\n';
-                std::cout << correct_map_data;
+                cerr << "Invalid data entry:" << entry << " found on line " << line_number << " of the map-data.csv file. " << ex.what() << '\n';
+                cout << correct_map_data;
                 return -1;
             }
 
             catch (const out_of_range &ex) 
             {
-                cerr << "Number out of range: " << entry << " Found on line" << line_number << " of the map-data.csv file. " << ex.what() << '\n';
-                std::cout << correct_map_data;
+                cerr << "Number out of range: " << entry << " found on line" << line_number << " of the map-data.csv file. " << ex.what() << '\n';
+                cout << correct_map_data;
                 return -1;
             }
         }
         map_file_contents.push_back(map_row); // Add the row vector to the map data vector
     }
 
-    std::cout << "Map data has been successfully read. \n";
+    cout << "Map data has been successfully read. \n";
     map_data.close();
     
     /* Use the data from the map-data.csv to create a distanceMap object and add corresponding map entries. */
@@ -336,18 +336,18 @@ int main(int argc, char* argv[])
         catch (const invalid_argument &ex) 
         {
             cerr << "Invalid distance found: " << ex.what() << '\n';
-            std::cout << correct_map_data;
+            cout << correct_map_data;
             return -1;
         } 
         catch (const out_of_range &ex) 
         {
             cerr << "Distance number out of range: " << ex.what() << '\n';
-            std::cout << correct_map_data;
+            cout << correct_map_data;
             return -1;
         }
     }
     
-    std::cout << "Created distance map for parcel delivery: \n";
+    cout << "Created distance map for parcel delivery: \n";
     newMap.print_distance_map(); // Print the distance map
 
     /* Use the data from the truck-data.csv to create truck objects and add them to a fleet of trucks. */
@@ -417,13 +417,13 @@ int main(int argc, char* argv[])
         catch (const invalid_argument &ex) 
         {
             cerr << "Invalid number: " << ex.what() << '\n';
-            std::cout << correct_parcel_data;
+            cout << correct_parcel_data;
             return -1;
         } 
         catch (const out_of_range &ex) 
         {
             cerr << "Invalid number: " << ex.what() << '\n';
-            std::cout << correct_parcel_data;
+            cout << correct_parcel_data;
             return -1;
         }
     }
@@ -438,13 +438,13 @@ int main(int argc, char* argv[])
         }
     }
 
-    std::cout << "Generating possible delivery schedules to deliver your parcels...\n";
+    cout << "Generating possible delivery schedules to deliver your parcels...\n";
 
     /* Generate the file for writing the scheduling algorithm statistics to. */
     ofstream route_stats("route-stats.csv");
     if (!route_stats.is_open())
     {
-        std::cout << "Error opening output file for route scheduling statistics!";
+        cout << "Error opening output file for route scheduling statistics!";
         return -1;
     }
 
@@ -473,43 +473,43 @@ int main(int argc, char* argv[])
     route_stats << "Most Parcels" << ", " << mostparcelfleet.free_vol_in_used_trucks() << ", " << mostparcelfleet.avg_capacity_used() << ", " << "+-" << mostparcelfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << mostparcelfleet.std_dev_distance_travelled(newMap) << "\n";
     route_stats << "Short Route" << ", " << shortroutefleet.free_vol_in_used_trucks() << ", " << shortroutefleet.avg_capacity_used() << ", " << "+-" << shortroutefleet.std_dev_capacity_used() << ", " << shortroutefleet.avg_distance_travelled(newMap) << ", " << "+-" << shortroutefleet.std_dev_distance_travelled(newMap) << "\n";
     
-    std::cout << "The scheduling algorithm that randomly packs parcels into trucks suggests using the following delivery routes: \n";
+    cout << "The scheduling algorithm that randomly packs parcels into trucks suggests using the following delivery routes: \n";
     randomfleet.print_fleet(); // Print out the fleet schedule for this scheduling algorithm
-    std::cout << "The scheduling algorithm that prioritizes packing the most possible parcels suggests using the following delivery routes: \n";
+    cout << "The scheduling algorithm that prioritizes packing the most possible parcels suggests using the following delivery routes: \n";
     mostparcelfleet.print_fleet(); // Print out the fleet schedule for this scheduling algorithm
-    std::cout << "The scheduling algorithm that prioritizes shortest routes suggests using the following delivery routes: \n";
+    cout << "The scheduling algorithm that prioritizes shortest routes suggests using the following delivery routes: \n";
     shortroutefleet.print_fleet(); // Print out the fleet schedule for this scheduling algorithm
 
     if (randomparcel_unpacked.size() == 0)
-        std::cout << "Using the Random Parcel scheduling algorithm all parcels were packed onto trucks. \n";
+        cout << "Using the Random Parcel scheduling algorithm all parcels were packed onto trucks. \n";
     else
     {
-        std::cout << "Using the Random Parcel scheduling algorithm the following parcels could not be packed onto trucks: ";
+        cout << "Using the Random Parcel scheduling algorithm the following parcels could not be packed onto trucks: ";
         for (const parcels &parcel : randomparcel_unpacked)
-            std::cout << parcel.this_id() << ", ";
-        std::cout << "\n";
+            cout << parcel.this_id() << ", ";
+        cout << "\n";
     }
 
     if (mostparcel_unpacked.size() == 0)
-        std::cout << "Using the Most Parcel scheduling algorithm all parcels were packed onto trucks. \n";
+        cout << "Using the Most Parcel scheduling algorithm all parcels were packed onto trucks. \n";
     else
     {
-        std::cout << "Using the Most Parcel scheduling algorithm the following parcels could not be packed onto trucks: ";
+        cout << "Using the Most Parcel scheduling algorithm the following parcels could not be packed onto trucks: ";
         for (const parcels &parcel : mostparcel_unpacked)
-            std::cout << parcel.this_id() << ", ";
-        std::cout << "\n";
+            cout << parcel.this_id() << ", ";
+        cout << "\n";
     }
 
     if (shortparcel_unpacked.size() == 0)
-        std::cout << "Using the Short Route scheduling algorithm all parcels were packed onto trucks. \n";
+        cout << "Using the Short Route scheduling algorithm all parcels were packed onto trucks. \n";
     else
     {
-        std::cout << "Using the Short Route scheduling algorithm the following parcels could not be packed onto trucks: ";
+        cout << "Using the Short Route scheduling algorithm the following parcels could not be packed onto trucks: ";
         for (const parcels &parcel : shortparcel_unpacked)
-            std::cout << parcel.this_id() << ", ";
-        std::cout << "\n";
+            cout << parcel.this_id() << ", ";
+        cout << "\n";
     }
 
     route_stats.close();
-    std::cout << "The route statistics have been written to the route-stats.csv file. Here you will find information on each scheduling algorithm regarding the free volume left in the packed trucks, the average capacity used of the loaded trucks, as well as the standard deviation. You will also find information about the average distance travelled by the loaded trucks, as well as the standard deviation. \n";
+    cout << "The route statistics have been written to the route-stats.csv file. Here you will find information on each scheduling algorithm regarding the free volume left in the packed trucks, the average capacity used of the loaded trucks, as well as the standard deviation. You will also find information about the average distance travelled by the loaded trucks, as well as the standard deviation. \n";
 }
