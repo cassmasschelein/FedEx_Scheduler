@@ -22,9 +22,6 @@
 
 using namespace std;
 
-/* This is the common depot where all trucks and parcels begin. */
-const string COMMON_DEPOT = "Toronto";
-
 /**
  * @brief Unique error messages for invalid distance maps
  * 
@@ -99,20 +96,6 @@ namespace truck_invalidation
          * 
          */
             unique_id() : invalid_argument("The truck ID must unique!"){};
-    };
-
-    /**
-     * @brief Error message for when the first stop on a trucks route is not the COMMON_DEPOT
-     * 
-     */
-    class mismatch_depot : public invalid_argument
-    {
-        public:
-        /**
-         * @brief Construct a new mismatch depot object
-         * 
-         */
-            mismatch_depot() : invalid_argument("The truck has the wrong depot for this fleet!"){};
     };
 }
 
@@ -218,12 +201,10 @@ public:
      * 
      * @param _id The trucks ID
      * @param _cap The trucks capacity
+     * @param _common_depot The trucks starting depot location
      */
-    trucks(const uint64_t &_id, const uint64_t &_cap) : avail_space(_cap), t_id(_id), t_cap(_cap), depot(COMMON_DEPOT) 
+    trucks(const uint64_t &_id, const uint64_t &_cap, const string &_common_depot) : avail_space(_cap), t_id(_id), t_cap(_cap), depot(_common_depot) 
     {
-        if (depot != COMMON_DEPOT) // The truck is not starting at the depot
-            throw truck_invalidation::mismatch_depot();
-
         route.push_back(depot); // Add the depot as the first stop on the route
         parcels_list = vector<uint64_t>(0); // A list of parcels on this truck
     }

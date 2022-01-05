@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Cassandra Masschelein
- * @brief A program that will read data from a map file, truck file, and parcel file and create various route schedules for delivery
+ * @brief A program that will read data from a map file, truck file, and parcel file and create various route schedules for delivery. User must input COMMON DEPOT into the program as a main argument
  * @version 0.1
  * @date 2021-12-26
  * 
@@ -43,13 +43,55 @@ void load_fleet(const vector<trucks> &list_of_trucks, fleet &newfleet)
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     /* Check that the input data files follow the specified format and contain valid data. */
+    string correct_common_depot = "The common depot for all the trucks must be a single city name. This name must be spelled properly and it must start with a capital letter. For example if your desired common depot was Toronto you would simply run the program with the argument: Toronto \n";
     string correct_truck_data = "The truck data file must be formatted such that each line contains a truck ID followed by its capacity (in cm^3) with the data separated by a comma. Both numbers must be inputted as integers. An example line of data for a truck with ID: 101 and capacity: 150cm^3 would be \n 101, 150 \n";
     string correct_parcel_data = "The parcel data file must be formatted such that each line contains a parcel ID followed by its source city, destination city, and its volume (in cm^3). The data must be separated by a comma, and both the ID and volume must be integer values. An example line of data for a parcel with ID: 50, source city: Hamilton, destination city: Toronto, volume: 7cm^3 would be \n 50, Hamilton, Toronto, 7 \n";
     string correct_map_data = "The map data file must be formatted such that each line contains two cities followed by the distance between them (in km). The data must be separated by a comma and the distance must be an integer value. An example line of data for the distance between Hamilton and Toronto which have a distance of 69km would be \n Hamilton, Toronto, 69 \n";
 
+    /* Validate program argument. */
+    if (argc < 2)
+    {
+        std::cout << "This program must take the common depot as the single argument! Please include the depot location! \n";
+        std::cout << correct_common_depot;
+        return -1;
+    }
+    else if (argc > 2)
+    {
+        std::cout << "This program only takes one argument! Please only include the name of the depot location. \n";
+        std::cout << correct_common_depot;
+        return -1;
+    }
+    else
+    {
+        try
+        {
+            string common_depot = argv[1];
+            uint64_t char_counter = 0;
+            for (const char &c : common_depot)
+            {
+                char_counter++;
+                if (char_counter == 1 and not (isalpha(c) and isupper(c)))
+                    throw invalid_argument("Depot name must start with a capital letter!");
+                if (char_counter > 1 and not (isalpha(c) and islower(c)))
+                    throw invalid_argument("Depot name must be a proper city name that is capitalized!");
+            }
+        }
+        catch (const invalid_argument &ex) 
+        {
+            std::cerr << "Invalid argument: " << ex.what() << '\n';
+            std::cout << correct_common_depot;
+            return -1;
+        } 
+    }
+
+    /**
+     * @brief The common depot for all the trucks to start their routes from
+     * 
+     */
+    string COMMON_DEPOT = argv[1];
     std::cout << "Reading file contents and preparing to create a delivery schedule for your parcels... \n";
 
     /* Open the data file containing the truck information. */
@@ -322,7 +364,7 @@ int main()
     {
         try
         {
-            trucks newtruck(truck_data[0], truck_data[1]);
+            trucks newtruck(truck_data[0], truck_data[1], COMMON_DEPOT);
             list_of_trucks.push_back(newtruck);
             list_of_trucks_random.push_back(newtruck);
             list_of_trucks_most.push_back(newtruck);
