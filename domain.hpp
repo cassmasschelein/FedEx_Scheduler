@@ -95,6 +95,11 @@ public:
         return p_vol;
     }
 
+    uint64_t this_id() const
+    {
+        return p_id;
+    }
+
     /**
      * @brief Return the city where this parcel is being sent
      * 
@@ -421,11 +426,7 @@ public:
             for (const trucks &truck : f_trucks)
             {
                 for (uint64_t i = 0; i < truck.route.size() - 1; i++)
-                {
                     distance_travel += dmap.distance(truck.route[i], truck.route[i + 1]); 
-                }
-                if (truck.route.size() > 1)
-                    distance_travel += dmap.distance(truck.route[0], truck.route[truck.route.size() - 1]);
             }
             avg_distance = (double)distance_travel / (double)N;
         }
@@ -450,11 +451,7 @@ public:
             {
                 uint64_t this_truck = 0;
                 for (uint64_t i = 0; i < truck.route.size() - 1; i++)
-                {
                     this_truck += dmap.distance(truck.route[i], truck.route[i + 1]);
-                }
-                if (truck.route.size() > 1)
-                    this_truck += dmap.distance(truck.route[0], truck.route[truck.route.size() - 1]);
 
                 sum_num_minus_mean += pow((double)this_truck - mean_dist, 2.0);
             }

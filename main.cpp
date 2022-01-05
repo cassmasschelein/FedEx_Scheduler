@@ -22,6 +22,21 @@
 
 using namespace std;
 
+void load_fleet(const vector<trucks> &list_of_trucks, fleet &newfleet)
+{
+    for (const trucks &truck : list_of_trucks)
+    {
+        try
+        {
+            newfleet.add_truck(truck);
+        }
+        catch(const exception &e)
+        {
+            cerr << e.what() << '\n';
+        }
+    }
+}
+
 int main()
 {
     /* Check that the input data files follow the specified format and contain valid data. */
@@ -300,12 +315,18 @@ int main()
     /* Use the data from the truck-data.csv to create truck objects and add them to a fleet of trucks. */
     
     vector<trucks> list_of_trucks; // Store the trucks read from the file
+    vector<trucks> list_of_trucks_random;
+    vector<trucks> list_of_trucks_most;
+    vector<trucks> list_of_trucks_short;
     for (vector<uint64_t> &truck_data : truck_file_contents)
     {
         try
         {
             trucks newtruck(truck_data[0], truck_data[1]);
             list_of_trucks.push_back(newtruck);
+            list_of_trucks_random.push_back(newtruck);
+            list_of_trucks_most.push_back(newtruck);
+            list_of_trucks_short.push_back(newtruck);
         }
         catch(const exception &e)
         {
@@ -361,28 +382,68 @@ int main()
         return -1;
     }
 
-    mostparcelScheduler pack_most_parcels(list_of_parcels, list_of_trucks); // Create clones to use in each scheduling algorithm
-    vector<parcels> unpacked_parcels = pack_most_parcels.schedule();
+    randomScheduler pack_random_parcels(list_of_parcels, list_of_trucks_random);
+    vector<parcels> randomparcel_unpacked = pack_random_parcels.schedule();
+
+    mostparcelScheduler pack_most_parcels(list_of_parcels, list_of_trucks_most); // Create clones to use in each scheduling algorithm
+    vector<parcels> mostparcel_unpacked = pack_most_parcels.schedule();
+
+    shortrouteScheduler pack_short_parcels(list_of_parcels, list_of_trucks_short);
+    vector<parcels> shortparcel_unpacked = pack_short_parcels.schedule();
 
     /* Add these trucks to your fleet to go out. */
 
+    fleet randomfleet;
     fleet mostparcelfleet;
-    for (const trucks &truck : list_of_trucks)
-    {
-        try
-        {
-            mostparcelfleet.add_truck(truck);
-        }
-        catch(const exception &e)
-        {
-            cerr << e.what() << '\n';
-        }
-    }
+    fleet shortroutefleet;
+
+    load_fleet(list_of_trucks_random, randomfleet);
+    load_fleet(list_of_trucks_most, mostparcelfleet);
+    load_fleet(list_of_trucks_short, shortroutefleet);
 
     /* Write the statistics to the file. */
-    route_stats << "Scheduler" << "," << "Free Vol in Used Trucks (cm^3)" << "," << "Avg Capacity Used (%)" << "," << "Std Dev Avg Capacity" << "," << "Avg Dist (km)" << "," << "Std Dev Dist" << "\n";
-    route_stats << "Most Parcels" << "," << mostparcelfleet.free_vol_in_used_trucks() << "," << mostparcelfleet.avg_capacity_used() << "," << "+-" << mostparcelfleet.std_dev_capacity_used() << "," << mostparcelfleet.avg_distance_travelled(newMap) << "," << "+-" << mostparcelfleet.std_dev_distance_travelled(newMap);
+    route_stats << "Scheduler" << ", " << "Free Volume in Used Trucks (cm^3)" << ", " << "Average Capacity Used (%)" << ", " << "Std Dev Average Capacity" << ", " << "Avg Distance (km)" << ", " << "Std Dev Distance" << "\n";
+    route_stats << "Random Parcels" << ", " << randomfleet.free_vol_in_used_trucks() << ", " << randomfleet.avg_capacity_used() << ", " << "+-" << randomfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << randomfleet.std_dev_distance_travelled(newMap) << "\n";
+    route_stats << "Most Parcels" << ", " << mostparcelfleet.free_vol_in_used_trucks() << ", " << mostparcelfleet.avg_capacity_used() << ", " << "+-" << mostparcelfleet.std_dev_capacity_used() << ", " << mostparcelfleet.avg_distance_travelled(newMap) << ", " << "+-" << mostparcelfleet.std_dev_distance_travelled(newMap) << "\n";
+    route_stats << "Short Route" << ", " << shortroutefleet.free_vol_in_used_trucks() << ", " << shortroutefleet.avg_capacity_used() << ", " << "+-" << shortroutefleet.std_dev_capacity_used() << ", " << shortroutefleet.avg_distance_travelled(newMap) << ", " << "+-" << shortroutefleet.std_dev_distance_travelled(newMap) << "\n";
+    
+    cout << "The scheduling algorithm that randomly packs parcels into trucks suggests using the following delivery routes: \n";
+    randomfleet.print_fleet(); // Print out the fleet schedule per this scheduling algorithm
+    cout << "The scheduling algorithm that prioritizes packing the most possible parcels suggests using the following delivery routes: \n";
     mostparcelfleet.print_fleet(); // Print out the fleet schedule per this scheduling algorithm
-    route_stats.close();
+    cout << "The scheduling algorithm that prioritizes shortest routes suggests using the following delivery routes: \n";
+    shortroutefleet.print_fleet(); // Print out the fleet schedule per this scheduling algorithm
 
+    if (randomparcel_unpacked.size() == 0)
+        cout << "Using the Random Parcel scheduling algorithm all parcels were packed onto trucks. \n";
+    else
+    {
+        cout << "Using the Random Parcel scheduling algorithm the following parcels could not be packed onto trucks: ";
+        for (const parcels &parcel : randomparcel_unpacked)
+            cout << parcel.this_id() << ", ";
+        cout << "\n";
+    }
+
+    if (mostparcel_unpacked.size() == 0)
+        cout << "Using the Most Parcel scheduling algorithm all parcels were packed onto trucks. \n";
+    else
+    {
+        cout << "Using the Most Parcel scheduling algorithm the following parcels could not be packed onto trucks: ";
+        for (const parcels &parcel : mostparcel_unpacked)
+            cout << parcel.this_id() << ", ";
+        cout << "\n";
+    }
+
+    if (shortparcel_unpacked.size() == 0)
+        cout << "Using the Short Route scheduling algorithm all parcels were packed onto trucks. \n";
+    else
+    {
+        cout << "Using the Short Route scheduling algorithm the following parcels could not be packed onto trucks: ";
+        for (const parcels &parcel : shortparcel_unpacked)
+            cout << parcel.this_id() << ", ";
+        cout << "\n";
+    }
+
+    route_stats.close();
+    cout << "The route statistics have been written to the route-stats.csv file. Here you will find information on each scheduling algorithm regarding the free volume left in the packed trucks, the average capacity used of the loaded trucks, as well as the standard deviation. You will also find information about the average distance travelled by the loaded trucks, as well as the standard deviation. \n";
 }
