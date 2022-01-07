@@ -6,9 +6,9 @@ The program takes three files, one containing map data, one containing parcel da
 
 Every parcel must have an ID, source city, destination city, and a volume in cubic centimeters. This must be entered into the parcel file in this exact order with values separated by commas and each parcel on a new line. A parcels ID is unique, that is, no two parcels can have the same ID. An example of a `parcel-data.csv` file is as follows.
 
-
-| 18 | London | Hamilton | 19 |
+| | | | |
 |:---|:---|:---|:---|
+| 18 | London | Hamilton | 19 |
 | 15| Belleville | Ottawa | 16 |
 |14 | Ottawa | Guelph | 20|
 |6| Belleville| Ottawa| 12|
@@ -27,8 +27,9 @@ Every parcel must have an ID, source city, destination city, and a volume in cub
 
 Every truck also has a unique ID. Trucks also have a maximum capacity in cubic centimeters, and as you load parcels into the truck the total volume of all parcels added cannot exceed the maximum capacity. A truck will also have a route that it will take to deliver the parcels that get loaded. An empty truck has an ID and maximum capacity. This must be entered into the truck file in this exact order with values separated by commas and each truck on a new line. An example of a `truck-data.csv` file is as follows.
 
-|3| 35|
+| | |
 |:---|:---|
+|3| 35|
 |8| 49|
 |5| 33|
 |6| 27|
@@ -39,8 +40,9 @@ All trucks and all parcels will start from a common location called the depot. T
 
 A map is constructed from the map data file using the class `distanceMap`. Each entry in this file must contain two cities and the respective distance between them in kilometers. There must be a map entry for every city that a parcel must be delivered to, and this city must be connected to all other cities. An example of a `map-data.csv` file is as follows.
 
-Belleville| Guelph| 265
+| | | |
 |:---|:---|:---|
+Belleville| Guelph| 265
 Belleville| Hamilton| 256
 Belleville| Toronto| 187
 Belleville| Ottawa| 269
@@ -106,8 +108,9 @@ The file `schedule.hpp` defines three different scheduling algorithms to be impl
 
 The program `main.cpp` runs these various scheduling algorithms for the given parcels and trucks and outputs performance statistics regarding the average and standard deviation for free volume in loaded trucks, the average and standard deviation for the capacity used in loaded trucks, and the average and standard deviation for the distance travelled for loaded trucks in this fleet. An example of the performance statistics written to the `route-stats.csv` file for the input data described above is as follows:
 
-Scheduler| Free Volume in Used Trucks (cm^3)| Average Capacity Used (%)| Std Dev Average Capacity| Avg Distance (km)| Std Dev Distance
+| | | | | | |
 |:---|:---|:---|:---|:---|:---|
+Scheduler| Free Volume in Used Trucks (cm^3)| Average Capacity Used (%)| Std Dev Average Capacity| Avg Distance (km)| Std Dev Distance
 Random Parcels| 25| 84.5357| +-12.5665| 536.8| +-132.59
 Most Parcels| 46| 75.3034| +-13.8122| 536.8| +-396.749
 Short Route| 16| 91.4323| +-6.7635| 275| +-224.113
